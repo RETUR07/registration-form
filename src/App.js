@@ -1,68 +1,61 @@
+import React from 'react';
+import './App.scss';
+import { Login, Register } from ".\\Components\\login\\index"
 
-import './App.css';
-import AuthForm from "./AuthForm"
-import { useState } from 'react';
+class App extends React.Component {
 
-const axios = require('axios').default;
-axios.interceptors.request.use(function (config) {
-  config.headers.Authorization = "Bearer " + localStorage.getItem("jwtToken")
-  return config;
-}, function (error) {
-  return Promise.reject(error);
-});
-
-function App() {
-  const [user, setUser] = useState(null);
-
-  const getUserInfo = () => {
-    axios({
-      method: 'get',
-      url: 'http://localhost:5050/api/user/'+ localStorage.getItem("userId"),
-    })
-    .catch(
-      function(error) {
-      console.log(error)
-      localStorage.setItem("jwtToken", "");
-      localStorage.setItem("userId", "");
-    })
-    .then(
-      function (response) {
-        if(response)
-        {
-          setUser(JSON.stringify(response.data));
-        }
-      })
+  constructor(props){
+    super(props);
+    this.state = {
+      isLogginActive: true,
+      isAuthorized: false,
+    }
   }
 
-  const LogOut = () => {
-    localStorage.setItem("jwtToken", "");
-    localStorage.setItem("userId", "");
-    window.location.reload();
+changeState() {
+  const { isLogginActive } = this.state;
+  if(isLogginActive) {
+    this.rightSide.classList.remove("right");
+    this.rightSide.classList.add("left");
   }
-  if(user)
-  {
+  else {
+    this.rightSide.classList.remove("left");
+    this.rightSide.classList.add("right");
+  }
+
+  this.setState( (prevState) => ({isLogginActive: !prevState.isLogginActive}));
+}
+
+setAuthorized()
+{
+  this.setState( (prevState) => ({isAuthorized: true,}));
+}
+
+
+  render() {
+    const { isLogginActive, isAuthorized } = this.state;
+    const current = isLogginActive ? "Login" : "Register";
+
     return (
-      <div>
-        <div className="App">
-          {user}
+      <div className="App">
+        <div className="login">
+          <div className="container">
+            {isLogginActive && !isAuthorized && <Login containerRef={ (ref) => this.current = ref}/>}
+            {!isLogginActive && !isAuthorized && <Register setAuthorized={this.setAuthorized.bind(this)} containerRef={ (ref) => this.current = ref}/>}
+          </div>
+          <RightSide current={current} containerRef={ (ref) => this.rightSide = ref} onClick={this.changeState.bind(this)}/>
         </div>
-        <button onClick={LogOut} className="btn" type="submit">
-          log out
-        </button>
-      </div>
-    );
-  }
-  else
-  {
-    return (
-      <div>
-        <div className="App">
-          <AuthForm />
-        </div>
-        {getUserInfo()}
       </div>
     );
   }
 }
-  
+
+const RightSide = props => {
+  return (<div className="right-side" ref={props.containerRef} onClick={props.onClick}>
+    <div className='inner-container'>
+      <div className="text">{props.current}</div>
+    </div>
+  </div>)
+}
+
 export default App;
