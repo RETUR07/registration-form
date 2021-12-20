@@ -10,7 +10,7 @@ axios.interceptors.request.use(function (config) {
 });
 
 
-export default function AuthForm() {
+export default function AuthForm(props) {
   
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
@@ -53,7 +53,7 @@ export default function AuthForm() {
         {
           localStorage.setItem("jwtToken", response.data.jwtToken);
           localStorage.setItem("userId", response.data.id);
-          window.location.reload();
+          props.setAuthorized(true);
         }
     })
 
@@ -100,6 +100,9 @@ export default function AuthForm() {
             Submit
           </button>
         </form>
+        <button onClick={() => props.setCreated(false)} className="btn" type="button">
+          Create User
+        </button>
       </div>
     </div>
   );

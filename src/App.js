@@ -1,61 +1,45 @@
-import React from 'react';
-import './App.scss';
-import { Login, Register } from ".\\Components\\login\\index"
 
-class App extends React.Component {
-
-  constructor(props){
-    super(props);
-    this.state = {
-      isLogginActive: true,
-      isAuthorized: false,
-    }
-  }
-
-changeState() {
-  const { isLogginActive } = this.state;
-  if(isLogginActive) {
-    this.rightSide.classList.remove("right");
-    this.rightSide.classList.add("left");
-  }
-  else {
-    this.rightSide.classList.remove("left");
-    this.rightSide.classList.add("right");
-  }
-
-  this.setState( (prevState) => ({isLogginActive: !prevState.isLogginActive}));
-}
-
-setAuthorized()
-{
-  this.setState( (prevState) => ({isAuthorized: true,}));
-}
+import './App.css';
+import AuthForm from "./AuthForm";
+import ChangeUserInfo from './ChangeUserInfo';
+import CreateUserForm from './CreateUserForm';
+import { useState } from 'react';
 
 
-  render() {
-    const { isLogginActive, isAuthorized } = this.state;
-    const current = isLogginActive ? "Login" : "Register";
+function App() {
+  const [isAuthorized, setAuthorized] = useState(false);
+  const [isCreated, setCreated] = useState(true);
 
+  if(isAuthorized)
+  {
     return (
-      <div className="App">
-        <div className="login">
-          <div className="container">
-            {isLogginActive && !isAuthorized && <Login containerRef={ (ref) => this.current = ref}/>}
-            {!isLogginActive && !isAuthorized && <Register setAuthorized={this.setAuthorized.bind(this)} containerRef={ (ref) => this.current = ref}/>}
-          </div>
-          <RightSide current={current} containerRef={ (ref) => this.rightSide = ref} onClick={this.changeState.bind(this)}/>
+      <div>
+        <div className="App">
+          <ChangeUserInfo setAuthorized={setAuthorized}/>
         </div>
       </div>
     );
   }
+  else 
+  if (isCreated)
+    {
+      return (
+        <div>
+          <div className="App">
+            <AuthForm setAuthorized={setAuthorized} setCreated={setCreated}/>
+          </div>
+        </div>
+      );
+    }
+    else{
+      return(
+        <div>
+          <div className='App'>
+            <CreateUserForm setCreated={setCreated}/>
+          </div>
+        </div>
+      );
+    }
 }
-
-const RightSide = props => {
-  return (<div className="right-side" ref={props.containerRef} onClick={props.onClick}>
-    <div className='inner-container'>
-      <div className="text">{props.current}</div>
-    </div>
-  </div>)
-}
-
+  
 export default App;
