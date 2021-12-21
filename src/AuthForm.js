@@ -52,7 +52,6 @@ export default function AuthForm(props) {
         if(response)
         {
           localStorage.setItem("jwtToken", response.data.jwtToken);
-          localStorage.setItem("userId", response.data.id);
           props.setAuthorized(true);
         }
     })

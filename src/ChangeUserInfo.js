@@ -45,7 +45,6 @@ export default function ChangeUserInfo(props) {
 
     const LogOut = () => {
         localStorage.setItem("jwtToken", "");
-        localStorage.setItem("userId", "");
         props.setAuthorized(false);
     }
 
@@ -57,7 +56,7 @@ export default function ChangeUserInfo(props) {
         else {
         axios({
           method: 'put',
-          url: 'http://localhost:5050/api/User/' + user.id,
+          url: 'http://localhost:5050/api/User/',
           data:{   
             "firstName": firstName,
             "lastName": lastName,
@@ -91,7 +90,7 @@ export default function ChangeUserInfo(props) {
     const GetUser = () => {
         axios({
             method: 'get',
-            url: 'http://localhost:5050/api/user/'+ localStorage.getItem("userId"),
+            url: 'http://localhost:5050/api/user/info',
             })
             .then(
             (response) => {
