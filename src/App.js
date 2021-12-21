@@ -7,7 +7,7 @@ import { useState } from 'react';
 
 
 function App() {
-  const [isAuthorized, setAuthorized] = useState(false);
+  const [isAuthorized, setAuthorized] = useState(true);
   const [isCreated, setCreated] = useState(true);
 
   if(isAuthorized)

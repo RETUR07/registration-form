@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const axios = require('axios').default;
 axios.interceptors.request.use(function (config) {
@@ -18,19 +18,29 @@ export default function ChangeUserInfo(props) {
     const [dateOfBirth, setDateOfBirth] = useState('');
     const [error, setError] = useState(false);
 
+    useEffect(() => {
+        if(!user)GetUser();
+      });
+
     const handleFirstName = (e) => {
         setFirstName(e.target.value);
         user.firstName = e.target.value;
+        setLastName(user.lastName);
+        setDateOfBirth(new Date(user.dateOfBirth));
       };
     
     const handleLastName = (e) => {
         setLastName(e.target.value);
         user.lastName = e.target.value;
+        setFirstName(user.firstName);
+        setDateOfBirth(new Date(user.dateOfBirth));
       };
     
     const handleDateOfBirth = (e) => {
-        setDateOfBirth(e.target.value);
-        user.dateOfBirth = e.target.value;
+        setDateOfBirth(new Date(e.target.value));
+        user.dateOfBirth = new Date(e.target.value);
+        setLastName(user.lastName);
+        setFirstName(user.firstName);
       };
 
     const LogOut = () => {
@@ -73,33 +83,33 @@ export default function ChangeUserInfo(props) {
             style={{
               display: error ? '' : 'none',
             }}>
-            <h1>Please enter all the fields</h1>
+            <h1>You did no changes</h1>
           </div>
         );
       };
 
-    if(!user)
-    axios({
-    method: 'get',
-    url: 'http://localhost:5050/api/user/'+ localStorage.getItem("userId"),
-    })
-    .catch(
-    function(error) {
-    console.log(error)
-    localStorage.setItem("jwtToken", "");
-    localStorage.setItem("userId", "");
-    props.setAuthorized(false);
-    })
-    .then(
-    function (response) {
-        if(response)
-        {
-            setUser(response.data);
-        }
-        else{
-            props.setAuthorized(false);
-        }
-    })
+    const GetUser = () => {
+        axios({
+            method: 'get',
+            url: 'http://localhost:5050/api/user/'+ localStorage.getItem("userId"),
+            })
+            .then(
+            (response) => {
+                if(response.data)
+                {
+                    setUser(response.data);
+                }
+                else
+                {
+                    LogOut();
+                }
+            })
+            .catch(
+                (error) => {
+                    console.log(error)
+                    LogOut();   
+            });
+    }
     if(user)
     {
     const date = new Date(user.dateOfBirth);
@@ -111,13 +121,11 @@ export default function ChangeUserInfo(props) {
           <h1>{user.userName}</h1>
         </div>
     
-        {/* Calling to the methods */}
         <div className="messages">
           {errorMessage()}
         </div>
     
         <form>
-          {/* Labels and inputs for form data */}
           <label className="label">First name</label>
           <input onChange={handleFirstName} className="input" 
              type="text" value={user.firstName}/>
@@ -141,9 +149,11 @@ export default function ChangeUserInfo(props) {
     );
     }
     else
-    return(
-        <div>
-            Loading...
-        </div>
-    );
+    {
+        return(
+            <div>
+                <label>Loading...</label>
+            </div>
+        );
+    }
 }
