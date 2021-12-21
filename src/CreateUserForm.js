@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 
 const axios = require('axios').default;
 
-export default function AuthForm() {
+export default function CreateUserForm(props) {
   
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -12,7 +12,6 @@ export default function AuthForm() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState(false);
   
-  // Handling the name change
   const handleFirstName = (e) => {
     setFirstName(e.target.value);
   };
@@ -36,7 +35,7 @@ export default function AuthForm() {
   // Handling the form submission
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (username === '' || password === '') {
+    if (username === '' || password === '' || lastName === '' || firstName === '' || dateOfBirth === '') {
       setError(true);
     } 
     else {
@@ -59,8 +58,7 @@ export default function AuthForm() {
       function (response) {
         if(response)
         {
-          localStorage.setItem("userId", response.data);
-          window.location.reload();
+          props.setCreated(true);
         }
     })
 
@@ -85,7 +83,7 @@ export default function AuthForm() {
     <div>
       <div className="form">
         <div>
-          <h1>User Authorization</h1>
+          <h1>User Registration</h1>
         </div>
     
         {/* Calling to the methods */}
@@ -117,6 +115,9 @@ export default function AuthForm() {
     
           <button onClick={handleSubmit} className="btn" type="submit">
             Submit
+          </button>
+          <button onClick={() => props.setCreated(true)} className="btn" type="submit">
+            Sign in
           </button>
         </form>
       </div>
