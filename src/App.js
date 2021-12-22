@@ -1,24 +1,15 @@
-
+import React, { useState } from 'react';
 import './App.css';
 import AuthForm from "./AuthForm";
 import ChangeUserInfo from './ChangeUserInfo';
 import CreateUserForm from './CreateUserForm';
-import { useState } from 'react';
-import { BrowserRouter as Router, Route, Link, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Link, Routes } from 'react-router-dom';
+import PrivateRoute from './Guards/PrivateRoute'
+import PublicRoute from './Guards/PublicRoute';
 
 
 function App() {
   const [isAuthorized, setAuthorized] = useState(true);
-
-  function PrivateRoute({ children }) {
-    const auth = isAuthorized;
-    return auth ? children : <Navigate to="/AuthForm" />;
-  }
-
-  function PublicRoute({ children }) {
-    const auth = isAuthorized;
-    return !auth ? children : <Navigate to="/ChangeUserInfo" />;
-  }
 
   return(
   <Router>
@@ -30,19 +21,19 @@ function App() {
     <Routes>
         <Route path='/ChangeUserInfo' element={ 
         <div className='App'>
-          <PrivateRoute>
+          <PrivateRoute isAuthorized={isAuthorized}>
             <ChangeUserInfo setAuthorized={setAuthorized}/>
           </PrivateRoute>
         </div>}/>
         <Route path='/AuthForm' element={
         <div className='App'>
-          <PublicRoute>
+          <PublicRoute isAuthorized={isAuthorized}>
             <AuthForm setAuthorized={setAuthorized}/>
           </PublicRoute>
         </div>}/>
         <Route path='/CreateUserForm' element={
         <div className='App'>
-          <PublicRoute>
+          <PublicRoute isAuthorized={isAuthorized}>
             <CreateUserForm/>
           </PublicRoute>
         </div>}/>
