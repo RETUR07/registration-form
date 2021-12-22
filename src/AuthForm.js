@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Button from '@mui/material/Button';
 
 
 const axios = require('axios').default;
@@ -95,13 +96,10 @@ export default function AuthForm(props) {
           <input onChange={handlePassword} className="input" 
             value={password} type="password" />
     
-          <button onClick={handleSubmit} className="btn" type="submit">
+          <Button class="mybtn" variant="contained" onClick={handleSubmit} className="btn" type="submit">
             Submit
-          </button>
+          </Button>
         </form>
-        <button onClick={() => props.setCreated(false)} className="btn" type="button">
-          Create User
-        </button>
       </div>
     </div>
   );

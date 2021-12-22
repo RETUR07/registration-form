@@ -25,7 +25,18 @@
   padding: 5px;
   margin: 10px auto;
   }
-  
+  .mylink{
+    border-radius: 5px;
+    padding: 5px;
+    margin: 10px auto;
+  }
+  .mybtn{
+    border-radius: 5px;
+    display: block;
+    padding: 5px;
+    margin: 10px auto;
+    }
+
   .messages{
   display: flex;
   justify-content: center;

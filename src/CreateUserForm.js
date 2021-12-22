@@ -56,10 +56,7 @@ export default function CreateUserForm(props) {
     })
     .then(
       function (response) {
-        if(response)
-        {
-          props.setCreated(true);
-        }
+        
     })
 
     setError(false);
