@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import Button from '@mui/material/Button';
+import Context from './Contexts/Context';
 
 
 const axios = require('axios').default;
@@ -11,12 +12,13 @@ axios.interceptors.request.use(function (config) {
 });
 
 
-export default function AuthForm(props) {
+export default function AuthForm() {
   
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(false);
-  
+  const {setAuthorized} = useContext(Context);
+
   // Handling the name change
   const handleName = (e) => {
     setName(e.target.value);
@@ -53,7 +55,7 @@ export default function AuthForm(props) {
         if(response)
         {
           localStorage.setItem("jwtToken", response.data.jwtToken);
-          props.setAuthorized(true);
+          setAuthorized(true);
         }
     })
 

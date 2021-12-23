@@ -3,9 +3,11 @@ import './App.css';
 import AuthForm from "./AuthForm";
 import ChangeUserInfo from './ChangeUserInfo';
 import CreateUserForm from './CreateUserForm';
+import UserPosts from './UserPosts';
 import { BrowserRouter as Router, Route, Link, Routes } from 'react-router-dom';
-import PrivateRoute from './Guards/PrivateRoute'
+import PrivateRoute from './Guards/PrivateRoute';
 import PublicRoute from './Guards/PublicRoute';
+import Context from './Contexts/Context';
 
 
 function App() {
@@ -14,62 +16,41 @@ function App() {
   return(
   <Router>
     <div>
-      <Link className='mylink' button to='/ChangeUserInfo'>ChangeUserInfo</Link>
-      <Link className='mylink' button to='/AuthForm'>AuthForm</Link>
-      <Link className='mylink' button to='/CreateUserForm'>CreateUserForm</Link>
+      <Link className='mylink' to='/'>Main</Link>
+      <Link className='mylink' to='/ChangeUserInfo'>ChangeUserInfo</Link>
+      <Link className='mylink' to='/AuthForm'>AuthForm</Link>
+      <Link className='mylink' to='/CreateUserForm'>CreateUserForm</Link>
     </div>
+    <Context.Provider value={{isAuthorized, setAuthorized}}>
     <Routes>
+        <Route path='/' element={ 
+        <div className='App'>
+          <PrivateRoute>
+            <UserPosts/>
+          </PrivateRoute>
+        </div>}/>
         <Route path='/ChangeUserInfo' element={ 
         <div className='App'>
-          <PrivateRoute isAuthorized={isAuthorized}>
-            <ChangeUserInfo setAuthorized={setAuthorized}/>
+          <PrivateRoute>
+            <ChangeUserInfo/>
           </PrivateRoute>
         </div>}/>
         <Route path='/AuthForm' element={
         <div className='App'>
-          <PublicRoute isAuthorized={isAuthorized}>
-            <AuthForm setAuthorized={setAuthorized}/>
+          <PublicRoute>
+            <AuthForm/>
           </PublicRoute>
         </div>}/>
         <Route path='/CreateUserForm' element={
         <div className='App'>
-          <PublicRoute isAuthorized={isAuthorized}>
+          <PublicRoute >
             <CreateUserForm/>
           </PublicRoute>
         </div>}/>
     </Routes>
+    </Context.Provider>
   </Router>
   );
-  // if(isAuthorized)
-  // {
-  //   return (
-  //     <div>
-  //       <div className="App">
-  //         <ChangeUserInfo setAuthorized={setAuthorized}/>
-  //       </div>
-  //     </div>
-  //   );
-  // }
-  // else 
-  // if (isCreated)
-  //   {
-  //     return (
-  //       <div>
-  //         <div className="App">
-  //           <AuthForm setAuthorized={setAuthorized} setCreated={setCreated}/>
-  //         </div>
-  //       </div>
-  //     );
-  //   }
-  //   else{
-  //     return(
-  //       <div>
-  //         <div className='App'>
-  //           <CreateUserForm setCreated={setCreated}/>
-  //         </div>
-  //       </div>
-  //     );
-  //   }
 }
-  
+
 export default App;

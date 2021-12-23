@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import Context from './Contexts/Context';
 
 const axios = require('axios').default;
 axios.interceptors.request.use(function (config) {
@@ -10,13 +11,14 @@ axios.interceptors.request.use(function (config) {
 
 
 
-export default function ChangeUserInfo(props) {
+export default function ChangeUserInfo() {
 
     const [user, setUser] = useState(null);
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [dateOfBirth, setDateOfBirth] = useState('');
     const [error, setError] = useState(false);
+    const {setAuthorized} = useContext(Context);
 
     useEffect(() => {
         if(!user)GetUser();
@@ -45,7 +47,7 @@ export default function ChangeUserInfo(props) {
 
     const LogOut = () => {
         localStorage.setItem("jwtToken", "");
-        props.setAuthorized(false);
+        setAuthorized(false);
     }
 
     const handleSubmit = (e) => {

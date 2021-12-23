@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 
 const axios = require('axios').default;
 
-export default function CreateUserForm(props) {
+export default function CreateUserForm() {
   
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -11,7 +11,7 @@ export default function CreateUserForm(props) {
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(false);
-  
+
   const handleFirstName = (e) => {
     setFirstName(e.target.value);
   };
@@ -112,9 +112,6 @@ export default function CreateUserForm(props) {
     
           <button onClick={handleSubmit} className="btn" type="submit">
             Submit
-          </button>
-          <button onClick={() => props.setCreated(true)} className="btn" type="submit">
-            Sign in
           </button>
         </form>
       </div>
