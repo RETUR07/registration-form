@@ -18,7 +18,7 @@ export default function ChangeUserInfo() {
     const [lastName, setLastName] = useState('');
     const [dateOfBirth, setDateOfBirth] = useState('');
     const [error, setError] = useState(false);
-    const {setAuthorized} = useContext(Context);
+    const {RotateJWT} = useContext(Context);
 
     useEffect(() => {
         if(!user)GetUser();
@@ -44,11 +44,6 @@ export default function ChangeUserInfo() {
         setLastName(user.lastName);
         setFirstName(user.firstName);
       };
-
-    const LogOut = () => {
-        localStorage.setItem("jwtToken", "");
-        setAuthorized(false);
-    }
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -100,15 +95,10 @@ export default function ChangeUserInfo() {
                 {
                     setUser(response.data);
                 }
-                else
-                {
-                    LogOut();
-                }
             })
             .catch(
                 (error) => {
-                    console.log(error)
-                    LogOut();   
+                  RotateJWT();
             });
     }
     if(user)
@@ -143,9 +133,6 @@ export default function ChangeUserInfo() {
             Submit
           </button>
         </form>
-        <button onClick={LogOut} className="btn" type="submit">
-            log out
-        </button>
       </div>
     );
     }

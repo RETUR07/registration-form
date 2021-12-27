@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useContext } from 'react';
 import Context from './Contexts/Context';
+import Container from '@mui/material/Container';
+import ImageList from '@mui/material/ImageList';
+import ImageListItem from '@mui/material/ImageListItem';
 
 const axios = require('axios').default;
 axios.interceptors.request.use(function (config) {
@@ -13,19 +16,13 @@ axios.interceptors.request.use(function (config) {
 
 export default function UserPosts() {
 
-    const [content, setContent] = useState(null);
+    const [content, setContent] = useState(JSON.parse(sessionStorage.getItem("loadedPosts")));
     const [error, setError] = useState(false);
-    const {setAuthorized} = useContext(Context);
+    const {RotateJWT} = useContext(Context);
 
     useEffect(() => {
-        if(!content)GetContent();
+        if(content === "" || content === null)GetContent();
       });
-
-
-    const LogOut = () => {
-        localStorage.setItem("jwtToken", "");
-        setAuthorized(false);
-    }
 
       const errorMessage = () => {
         return (
@@ -39,11 +36,38 @@ export default function UserPosts() {
         );
       };
 
+    const ShowContent = (content) => {
+      return (
+        <Container maxWidth="sm">
+        <ImageList sx={{ width: 500, height: 450 }} cols={3} rowHeight={164}>
+          {content.map((file) => 
+            <ImageListItem key={file.fileDownloadName}>
+              <img src={`data:${file.contentType}};base64,${file.fileContents}`} width="50%" height="50%" alt={file.fileDownloadName}/>
+            </ImageListItem>
+          )}
+        </ImageList>
+        </Container>
+      );
+    }
     const ShowPosts = () => {
         return (
-            <ol>
-                {content.map((post) => <li key={post.id}>{post.header}</li>)}
-            </ol>  
+          <Container maxWidth="sm">
+            <ol className='list'>
+                {content.map((post) => (
+                  <li key={post.id}>
+                    <Container maxWidth="sm">
+                    <div>
+                      <h3>{post.header}</h3>
+                      <h5>{post.text}</h5>
+                    </div>
+                    <div>
+                      {ShowContent(post.content)}
+                    </div>
+                    </Container>
+                  </li>
+                ))}
+            </ol>
+            </Container>
             );
     }
 
@@ -57,18 +81,17 @@ export default function UserPosts() {
             (response) => {
                 if(response.data)
                 {
-                    console.log(response.data);
-                    setContent(response.data);
+                  sessionStorage.setItem("loadedPosts", JSON.stringify(response.data));
+                  setContent(response.data);
                 }
                 else
                 {
-                    setError();
+                    setError(true);
                 }
             })
             .catch(
                 (error) => {
-                    console.log(error);
-                    LogOut();   
+                 RotateJWT();
             });
     }
 
@@ -78,8 +101,8 @@ export default function UserPosts() {
     
     return (
       <div>
-        <button onClick={LogOut} className="btn" type="submit">
-            log out
+        <button onClick={GetContent} className="btn" type="button">
+          update
         </button>
         <div className="messages">
           {errorMessage()}

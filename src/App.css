@@ -58,4 +58,8 @@
   height: 50px;
   padding: 5px;
   }
-  
+
+.list{
+  list-style-type: none;
+  padding-left: 0ch;
+}
