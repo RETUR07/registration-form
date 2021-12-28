@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import './App.css';
-import AuthForm from "./AuthForm";
-import ChangeUserInfo from './ChangeUserInfo';
-import CreateUserForm from './CreateUserForm';
-import UserPosts from './UserPosts';
+import AuthForm from "./Components/AuthForm";
+import ChangeUserInfo from './Components/ChangeUserInfo';
+import CreateUserForm from './Components/CreateUserForm';
+import UserPosts from './Components/UserPosts';
 import { BrowserRouter as Router, Route, Link, Routes } from 'react-router-dom';
 import PrivateRoute from './Guards/PrivateRoute';
 import PublicRoute from './Guards/PublicRoute';
 import Context from './Contexts/Context';
+import Button from '@mui/material/Button';
 
 const axios = require('axios').default;
+const cache = require('memory-cache');
 
 
 function App() {
@@ -36,6 +38,7 @@ function App() {
   }
 
   const LogOut = () => {
+    cache.clear();
     localStorage.setItem("jwtToken", "");
     setAuthorized(false);
   }
@@ -53,9 +56,9 @@ function App() {
         <Route path='/' element={ 
         <div className='App'>
           <PrivateRoute>
-            <button onClick={LogOut} className="btn" type="submit">
+            <Button variant='contained' onClick={LogOut} class="mybtn" type="submit">
               log out
-            </button>
+            </Button>
             <UserPosts/>
           </PrivateRoute>
         </div>}/>

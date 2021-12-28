@@ -1,7 +1,6 @@
 import React, { useState, useContext } from 'react';
+import Context from '../Contexts/Context';
 import Button from '@mui/material/Button';
-import Context from './Contexts/Context';
-
 
 const axios = require('axios').default;
 axios.interceptors.request.use(function (config) {
@@ -89,6 +88,7 @@ export default function AuthForm() {
         </div>
     
         <form>
+
           {/* Labels and inputs for form data */}
           <label className="label">Username</label>
           <input onChange={handleName} className="input" 
@@ -97,8 +97,7 @@ export default function AuthForm() {
           <label className="label">Password</label>
           <input onChange={handlePassword} className="input" 
             value={password} type="password" />
-    
-          <Button class="mybtn" variant="contained" onClick={handleSubmit} className="btn" type="submit">
+          <Button class='mybtn' variant="contained" onClick={handleSubmit} type="submit">
             Submit
           </Button>
         </form>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import Context from './Contexts/Context';
+import Context from '../Contexts/Context';
 
 const axios = require('axios').default;
 axios.interceptors.request.use(function (config) {
