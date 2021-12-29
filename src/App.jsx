@@ -1,49 +1,33 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import './App.css';
-import AuthForm from "./Components/AuthForm";
-import ChangeUserInfo from './Components/ChangeUserInfo';
-import CreateUserForm from './Components/CreateUserForm';
-import UserPosts from './Components/UserPosts';
+import Authorization from './Authorization/Authorization';
+import AuthForm from "./Components/AuthForm.jsx";
+import ChangeUserInfo from './Components/ChangeUserInfo.jsx';
+import CreateUserForm from './Components/CreateUserForm.jsx';
+import UserPosts from './Components/UserPosts.jsx';
 import { BrowserRouter as Router, Route, Link, Routes } from 'react-router-dom';
 import PrivateRoute from './Guards/PrivateRoute';
 import PublicRoute from './Guards/PublicRoute';
 import Context from './Contexts/Context';
 import Button from '@mui/material/Button';
 
-const axios = require('axios').default;
 const cache = require('memory-cache');
 
 
 function App() {
-  const [isAuthorized, setAuthorized] = useState(true);
 
-  const RotateJWT = () => {
-    axios({
-      method: 'post',
-      url: 'http://localhost:5050/api/Authorization/refresh-token',
-    })
-    .catch(
-      function(error) {
-      console.log(error);
-      LogOut();
-    })
-    .then(
-      function (response) {
-        if(response)
-        {
-          localStorage.setItem("jwtToken", response.data.jwtToken);
-          setAuthorized(true);
-        }
-    })
-  }
+  const [isAuthorized, setAuthorized] = useState(true);
 
   const LogOut = () => {
     cache.clear();
     localStorage.setItem("jwtToken", "");
+    localStorage.setItem("refreshToken", "");
     setAuthorized(false);
   }
 
   return(
+<Context.Provider value={{isAuthorized, setAuthorized}}>
+  <Authorization/>
   <Router>
     <div>
       <Link className='mylink' to='/'>Main</Link>
@@ -51,7 +35,6 @@ function App() {
       <Link className='mylink' to='/AuthForm'>AuthForm</Link>
       <Link className='mylink' to='/CreateUserForm'>CreateUserForm</Link>
     </div>
-    <Context.Provider value={{isAuthorized, setAuthorized, RotateJWT}}>
     <Routes>
         <Route path='/' element={ 
         <div className='App'>
@@ -84,8 +67,8 @@ function App() {
           </PublicRoute>
         </div>}/>
     </Routes>
-    </Context.Provider>
   </Router>
+</Context.Provider>
   );
 }
 

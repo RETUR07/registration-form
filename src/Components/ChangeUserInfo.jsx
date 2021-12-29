@@ -1,15 +1,6 @@
-import React, { useState, useEffect, useContext } from 'react';
-import Context from '../Contexts/Context';
+import React, { useState, useEffect } from 'react';
 
 const axios = require('axios').default;
-axios.interceptors.request.use(function (config) {
-  config.headers.Authorization = "Bearer " + localStorage.getItem("jwtToken")
-  return config;
-}, function (error) {
-  return Promise.reject(error);
-});
-
-
 
 export default function ChangeUserInfo() {
 
@@ -18,7 +9,6 @@ export default function ChangeUserInfo() {
     const [lastName, setLastName] = useState('');
     const [dateOfBirth, setDateOfBirth] = useState('');
     const [error, setError] = useState(false);
-    const {RotateJWT} = useContext(Context);
 
     useEffect(() => {
         if(!user)GetUser();
@@ -98,7 +88,7 @@ export default function ChangeUserInfo() {
             })
             .catch(
                 (error) => {
-                  RotateJWT();
+                  console.log(error);
             });
     }
     if(user)

@@ -3,20 +3,13 @@ import Context from '../Contexts/Context';
 import Button from '@mui/material/Button';
 
 const axios = require('axios').default;
-axios.interceptors.request.use(function (config) {
-  config.headers.Authorization = "Bearer " + localStorage.getItem("jwtToken")
-  return config;
-}, function (error) {
-  return Promise.reject(error);
-});
-
 
 export default function AuthForm() {
   
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(false);
-  const {setAuthorized} = useContext(Context);
+  const { setAuthorized } = useContext(Context);
 
   // Handling the name change
   const handleName = (e) => {
@@ -47,13 +40,14 @@ export default function AuthForm() {
       function(error) {
       console.log(error);
       localStorage.setItem("jwtToken", "");
-      localStorage.setItem("userId", "");
+      localStorage.setItem("refreshToken", "");
     })
     .then(
       function (response) {
         if(response)
         {
           localStorage.setItem("jwtToken", response.data.jwtToken);
+          localStorage.setItem("refreshToken", response.data.refreshToken);
           setAuthorized(true);
         }
     })

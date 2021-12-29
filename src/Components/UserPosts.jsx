@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
-import Context from '../Contexts/Context';
+import React, { useState, useEffect } from 'react';
 import Container from '@mui/material/Container';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
@@ -13,12 +12,6 @@ import Skeleton from '@mui/material/Skeleton';
 
 const cache = require('memory-cache');
 const axios = require('axios').default;
-axios.interceptors.request.use(function (config) {
-  config.headers.Authorization = "Bearer " + localStorage.getItem("jwtToken")
-  return config;
-}, function (error) {
-  return Promise.reject(error);
-});
 
 
 
@@ -26,7 +19,6 @@ export default function UserPosts() {
 
     const [content, setContent] = useState(cache.get('posts'));
     const [error, setError] = useState(false);
-    const {RotateJWT} = useContext(Context);
 
     useEffect(() => {
         if(content === "" || content === null)GetContent();
@@ -103,8 +95,8 @@ export default function UserPosts() {
             })
             .catch(
                 (error) => {
-                 RotateJWT();
-            });
+                  console.log(error); 
+                   });
             setError(false);
     }
 
@@ -146,8 +138,8 @@ export default function UserPosts() {
           data: bodyFormData,
         })
         .catch(
-          function(error) {
-            RotateJWT();
+          (error) => {
+            console.log(error);
           })    
         }
         setError(false);
