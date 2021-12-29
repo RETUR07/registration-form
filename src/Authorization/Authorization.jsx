@@ -28,6 +28,7 @@ export default function Authorization(){
     });
 
     const refreshAccessToken = () => {
+    
     axios({
         method: 'post',
         url: 'http://localhost:5050/api/Authorization/refresh-token',
@@ -48,5 +49,5 @@ export default function Authorization(){
         }
     })
     }
-    return (<div></div>);
+    return (null);
 }

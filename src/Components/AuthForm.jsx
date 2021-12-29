@@ -49,6 +49,29 @@ export default function AuthForm() {
           localStorage.setItem("jwtToken", response.data.jwtToken);
           localStorage.setItem("refreshToken", response.data.refreshToken);
           setAuthorized(true);
+          axios({
+            method: 'post',
+            url: 'http://localhost:5050/api/Authorization/refresh-token',
+            headers:{
+              "Content-Type": "application/json"
+            },
+            data: `${localStorage.getItem("refreshToken")}`,
+        })
+        .catch(
+            (error) => {
+            console.log(error);
+            setAuthorized(false);
+        })
+        .then(
+            (response) => {
+            if(response)
+            {
+                localStorage.setItem("jwtToken", response.data.jwtToken);
+                localStorage.setItem("refreshToken", response.data.refreshToken);
+                setAuthorized(true);
+            }
+        });
+        
         }
     })
 

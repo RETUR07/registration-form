@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Container from '@mui/material/Container';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
@@ -10,6 +10,10 @@ import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import Skeleton from '@mui/material/Skeleton';
 
+
+import useInView from "react-cool-inview";
+
+
 const cache = require('memory-cache');
 const axios = require('axios').default;
 
@@ -17,12 +21,45 @@ const axios = require('axios').default;
 
 export default function UserPosts() {
 
-    const [content, setContent] = useState(cache.get('posts'));
+    const [content, setContent] = useState(cache.get('posts')?cache.get('posts'):[]);
     const [error, setError] = useState(false);
+    const [currentPage, setPage] = useState(cache.get('lastLoadedPage')?(cache.get('lastLoadedPage')+1):1);
 
-    useEffect(() => {
-        if(content === "" || content === null)GetContent();
-      });
+    const { observe } = useInView({
+      // For better UX, we can grow the root margin so the data will be loaded earlier
+      rootMargin: "100px 0px",
+      // When the last item comes to the viewport
+      onEnter: ({ unobserve, observe }) => {
+        // Pause observe when loading data
+        unobserve();
+        // Load more data
+        const params = new URLSearchParams({
+          PageNumber: currentPage,
+          PageSize: 2,
+        }).toString();
+        axios({
+            method: 'get',
+            url: 'http://localhost:5050/api/Post/childposts/1?' + params,
+            })
+            .then(
+            (response) => {
+                if(response.data && response.data.length !== 0)
+                {
+                  const newContent = content.concat(response.data);
+                  cache.put('posts', newContent, 300000);
+                  cache.put('lastLoadedPage', currentPage, 300000);
+                  setContent(newContent);
+                  setPage(currentPage + 1);
+                  observe();
+                }
+            })
+            .catch(
+                (error) => {
+                  console.log(error); 
+                   });
+            setError(false);
+      },
+    });
 
     const errorMessage = () => {
       return (
@@ -71,34 +108,11 @@ export default function UserPosts() {
                   </li>
                 ))}
             </ol>
+            <div ref={observe}></div>
             </Container>
             );
     }
-
-
-    const GetContent = () => {
-        axios({
-            method: 'get',
-            url: 'http://localhost:5050/api/Post/childposts/1',
-            })
-            .then(
-            (response) => {
-                if(response.data)
-                {
-                  cache.put('posts', response.data, 300000);
-                  setContent(response.data);
-                }
-                else
-                {
-                    setError(true);
-                }
-            })
-            .catch(
-                (error) => {
-                  console.log(error); 
-                   });
-            setError(false);
-    }
+        
 
     const [title, setTitle] = useState('');
     const [files, setFiles] = useState([]);
@@ -127,8 +141,8 @@ export default function UserPosts() {
         bodyFormData.append('Header', title);
         bodyFormData.append('ParentPostId', 1);
         bodyFormData.append('Text', text);
-        bodyFormData.append('Content', files[0]);
-        bodyFormData.append('Content', files[1]);
+        files.forEach((item) => bodyFormData.append('Content', item))
+
         axios({
           method: 'post',
           url: 'http://localhost:5050/api/Post',
@@ -147,13 +161,18 @@ export default function UserPosts() {
 
     if(content)
     {
-    
+      
     return (
       <div>
         <Box sx={{ '& button': { m: 2 } }}>
-        <Button variant='contained' onClick={GetContent} class="mybtn" type="button">
-          update
-        </Button>
+        <Button variant='contained' onClick={() => 
+          { 
+            cache.clear();
+            setContent([]);
+            setPage(1);
+            }} class="mybtn" type="button">
+          Update
+        </Button>    
         </Box>
         <div className="messages">
           {errorMessage()}
@@ -165,7 +184,7 @@ export default function UserPosts() {
             <div>
               <label>Title</label>
               <input onChange={handleTitle} className="input" type="text"/>
-            </div> } />
+            </div>} />
             <label>Files</label>
               <input onChange={handleFiles} className="input" type="file" multiple/>
             <CardContent>
@@ -183,6 +202,27 @@ export default function UserPosts() {
         </form>
         </Container>
         <ShowPosts />     
+        <Container maxWidth="sm">
+              <Card sx={{ maxWidth: 400, m: 2 }}>
+                <CardHeader
+                  title={
+                      <Skeleton
+                        animation="wave"
+                        height={10}
+                        width="80%"
+                        style={{ marginBottom: 6 }}
+                      />
+                  }
+                />
+                <Skeleton sx={{ height: 190 }} animation="wave" variant="rectangular" />
+                <CardContent>
+                    <React.Fragment>
+                      <Skeleton animation="wave" height={10} style={{ marginBottom: 6 }} />
+                      <Skeleton animation="wave" height={10} width="80%" />
+                    </React.Fragment>
+                </CardContent>
+              </Card>
+            </Container>   
       </div>
     );
     }
@@ -190,7 +230,7 @@ export default function UserPosts() {
     {
         return(
             <Container maxWidth="sm">
-              <Card sx={{ maxWidth: 345, m: 2 }}>
+              <Card sx={{ maxWidth: 400, m: 2 }}>
                 <CardHeader
                   title={
                       <Skeleton
