@@ -1,6 +1,8 @@
 import { useContext } from 'react';
 import Context from '../Contexts/Context';
 
+const cache = require('memory-cache');
+
 export default function Authorization(){
     const axios = require('axios').default;
     const {setAuthorized} = useContext(Context);
@@ -32,11 +34,15 @@ export default function Authorization(){
     axios({
         method: 'post',
         url: 'http://localhost:5050/api/Authorization/refresh-token',
-        data: localStorage.getItem("refreshToken"),
+        headers:{
+            "Content-Type": "application/json",
+        },
+        data: `${localStorage.getItem("refreshToken")}`,
     })
     .catch(
         (error) => {
         console.log(error);
+        cache.clear();
         setAuthorized(false);
     })
     .then(

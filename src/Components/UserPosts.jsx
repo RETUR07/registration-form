@@ -9,7 +9,7 @@ import CardHeader from '@mui/material/CardHeader';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import Skeleton from '@mui/material/Skeleton';
-
+import FavoriteIcon from '@mui/icons-material/Favorite';
 
 import useInView from "react-cool-inview";
 
@@ -22,6 +22,7 @@ const axios = require('axios').default;
 export default function UserPosts() {
 
     const [content, setContent] = useState(cache.get('posts')?cache.get('posts'):[]);
+    const [likes, setLikes] = useState(cache.get('likes')?cache.get('likes'):[]);
     const [error, setError] = useState(false);
     const [currentPage, setPage] = useState(cache.get('lastLoadedPage')?(cache.get('lastLoadedPage')+1):1);
 
@@ -35,8 +36,9 @@ export default function UserPosts() {
         // Load more data
         const params = new URLSearchParams({
           PageNumber: currentPage,
-          PageSize: 2,
+          PageSize: 4,
         }).toString();
+
         axios({
             method: 'get',
             url: 'http://localhost:5050/api/Post/childposts/1?' + params,
@@ -50,14 +52,39 @@ export default function UserPosts() {
                   cache.put('lastLoadedPage', currentPage, 300000);
                   setContent(newContent);
                   setPage(currentPage + 1);
-                  observe();
+                  setError(false);
+                  const rateParams = new URLSearchParams();
+
+                  for(let idx = 0; idx < newContent.length; idx++){
+                    rateParams.append("postIDs", newContent[idx].id);            
+                  }
+                  axios({
+                    method: 'get',
+                    url: 'http://localhost:5050/api/Rate/posts?' + rateParams.toString(),
+                    })
+                    .then(
+                    (response) => {
+                        if(response.data && response.data.length !== 0)
+                        {
+                          cache.put('likes', response.data, 300000);
+                          setLikes(response.data);
+                          setError(false);
+                          observe();
+                        }
+                    })
+                    .catch(
+                        (error) => {
+                          setError(true);
+                          console.log(error); 
+                    });
                 }
             })
             .catch(
                 (error) => {
+                  setError(true);
                   console.log(error); 
                    });
-            setError(false);
+
       },
     });
 
@@ -73,6 +100,17 @@ export default function UserPosts() {
       );
     };
 
+    const ShowLikes = (params) => {
+      const likeValue = (likes.find((x) => x.find(y => y.postId === params.postId)));
+      const output = likeValue?likeValue.length:0;
+        return (
+          <div>
+            {output} 
+            <FavoriteIcon/>
+          </div>
+          );
+    }
+
     const ShowContent = (content) => {
       return (
         <Container maxWidth="sm">
@@ -86,6 +124,7 @@ export default function UserPosts() {
         </Container>
       );
     }
+
     const ShowPosts = () => {
         return (
           <Container maxWidth="sm">
@@ -97,12 +136,13 @@ export default function UserPosts() {
                         { ShowContent(post.content) }
                         <CardContent>
                           {
-                            <Typography variant="body2" color="text.secondary" component="p">
+                            <Typography variant="body1" align='left' gutterBottom component="div">
                               {
                                 post.text
                               }
                             </Typography>
                           }
+                          <ShowLikes postId={post.id}/>
                         </CardContent>
                       </Card>
                   </li>
@@ -141,7 +181,10 @@ export default function UserPosts() {
         bodyFormData.append('Header', title);
         bodyFormData.append('ParentPostId', 1);
         bodyFormData.append('Text', text);
-        files.forEach((item) => bodyFormData.append('Content', item))
+        console.log(files);
+        for(let idx = 0; idx < files.length; idx++){
+          bodyFormData.append('Content', files[idx]);
+        }
 
         axios({
           method: 'post',
@@ -161,7 +204,7 @@ export default function UserPosts() {
 
     if(content)
     {
-      
+      console.log("something");
     return (
       <div>
         <Box sx={{ '& button': { m: 2 } }}>
@@ -169,10 +212,11 @@ export default function UserPosts() {
           { 
             cache.clear();
             setContent([]);
+            setLikes([]);
             setPage(1);
             }} class="mybtn" type="button">
           Update
-        </Button>    
+        </Button>
         </Box>
         <div className="messages">
           {errorMessage()}
@@ -180,20 +224,28 @@ export default function UserPosts() {
         <Container maxWidth="sm">
         <form>
           <Card sx={{ maxWidth: 400, m: 2 }}>
-            <CardHeader title={ 
-            <div>
-              <label>Title</label>
-              <input onChange={handleTitle} className="input" type="text"/>
-            </div>} />
-            <label>Files</label>
-              <input onChange={handleFiles} className="input" type="file" multiple/>
+            <CardHeader title='Create post'/>
+            
             <CardContent>
-              {
-                <Typography variant="body2" color="text.secondary" component="p">                 
-                   <label>Text</label>
-                   <input onChange={handleText} className="input" type="text"/>                 
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                }}
+              >
+                <label>Title</label>
+                <input onChange={handleTitle} className="input" type="text"/>
+                <label>Files</label>
+                <input onChange={handleFiles} className="input" type="file" multiple/>
+                <label>Text</label>
+                <Typography variant="body1" component="div">                 
+                <textarea name="Text1" cols="40" rows="5" onChange={handleText}></textarea>              
                 </Typography>
-              }
+              </Box>
+              
+
+              
             </CardContent>
             <button onClick={handleSubmit} className="btn" type="submit">
               Create
