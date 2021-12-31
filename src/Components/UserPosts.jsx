@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Container from '@mui/material/Container';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
@@ -11,9 +11,6 @@ import Typography from '@mui/material/Typography';
 import Skeleton from '@mui/material/Skeleton';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 
-import useInView from "react-cool-inview";
-
-
 const cache = require('memory-cache');
 const axios = require('axios').default;
 
@@ -25,68 +22,51 @@ export default function UserPosts() {
     const [likes, setLikes] = useState(cache.get('likes')?cache.get('likes'):[]);
     const [error, setError] = useState(false);
     const [currentPage, setPage] = useState(cache.get('lastLoadedPage')?(cache.get('lastLoadedPage')+1):1);
+    const [fetching, setFetching] = useState(false);
 
-    const { observe } = useInView({
-      // For better UX, we can grow the root margin so the data will be loaded earlier
-      rootMargin: "100px 0px",
-      // When the last item comes to the viewport
-      onEnter: ({ unobserve, observe }) => {
-        // Pause observe when loading data
-        unobserve();
-        // Load more data
-        const params = new URLSearchParams({
-          PageNumber: currentPage,
-          PageSize: 4,
-        }).toString();
+    useEffect(() => {
+      document.addEventListener('scroll', scrollHandler);
+      return () => { document.removeEventListener('scroll', scrollHandler)}
+    }, []);
 
-        axios({
-            method: 'get',
-            url: 'http://localhost:5050/api/Post/childposts/1?' + params,
-            })
-            .then(
-            (response) => {
-                if(response.data && response.data.length !== 0)
-                {
-                  const newContent = content.concat(response.data);
-                  cache.put('posts', newContent, 300000);
-                  cache.put('lastLoadedPage', currentPage, 300000);
-                  setContent(newContent);
-                  setPage(currentPage + 1);
-                  setError(false);
-                  const rateParams = new URLSearchParams();
+    const scrollHandler = (e) => {
+      if(e.target.documentElement.scrollHeight - (e.target.documentElement.scrollTop + window.innerHeight) < 100){
+        setFetching(true);
+      }
+    }
 
-                  for(let idx = 0; idx < newContent.length; idx++){
-                    rateParams.append("postIDs", newContent[idx].id);            
-                  }
-                  axios({
-                    method: 'get',
-                    url: 'http://localhost:5050/api/Rate/posts?' + rateParams.toString(),
-                    })
-                    .then(
-                    (response) => {
-                        if(response.data && response.data.length !== 0)
-                        {
-                          cache.put('likes', response.data, 300000);
-                          setLikes(response.data);
-                          setError(false);
-                          observe();
-                        }
-                    })
-                    .catch(
-                        (error) => {
-                          setError(true);
-                          console.log(error); 
-                    });
-                }
-            })
-            .catch(
-                (error) => {
-                  setError(true);
-                  console.log(error); 
-                   });
+    useEffect(() => 
+    {
+      if(fetching){
+      const params = new URLSearchParams({
+        PageNumber: currentPage,
+        PageSize: 4,
+      }).toString();
 
-      },
-    });
+      axios({
+        method: 'get',
+        url: 'http://localhost:5050/api/Post/childposts/1?' + params,
+        })
+        .then(
+        (response) => {
+            if(response.data && response.data.length !== 0)
+            {
+              const newContent = content.concat(response.data);
+              cache.put('posts', newContent, 300000);
+              cache.put('lastLoadedPage', currentPage, 300000);
+              setContent(newContent);
+              setPage(currentPage + 1);
+              setError(false);
+              GetLikes(newContent);
+                
+            }
+        })
+        .catch(
+            (error) => {
+              setError(true);
+              console.log(error); 
+               });
+      }}, [fetching]);
 
     const errorMessage = () => {
       return (
@@ -100,13 +80,60 @@ export default function UserPosts() {
       );
     };
 
+    const GetLikes = (content) => {
+      const rateParams = new URLSearchParams();
+
+      for(let idx = 0; idx < content.length; idx++){
+        rateParams.append("postIDs", content[idx].id);            
+      }
+      axios({
+        method: 'get',
+        url: 'http://localhost:5050/api/Rate/posts?' + rateParams.toString(),
+        })
+        .then(
+        (response) => {
+            if(response.data && response.data.length !== 0)
+            {
+              cache.put('likes', response.data, 300000);
+              setLikes(response.data);
+              setError(false);
+            }
+        })
+        .catch(
+            (error) => {
+              setError(true);
+              console.log(error); 
+        })
+        .finally(() => {setFetching(false)});
+    }
+
+    const Like = (postId) => {
+      axios({
+        method: 'put',
+        url: 'http://localhost:5050/api/Rate/post',
+        data:{
+          "objectId": postId,
+          "likeStatus": 0
+        },
+        })
+        .then(
+        (response) => {
+            GetLikes(content);
+        })
+        .catch(
+            (error) => {
+              setError(true);
+              console.log(error); 
+        });
+    }
+
     const ShowLikes = (params) => {
       const likeValue = (likes.find((x) => x.find(y => y.postId === params.postId)));
       const output = likeValue?likeValue.length:0;
         return (
           <div>
             {output} 
-            <FavoriteIcon/>
+            <FavoriteIcon type="button" onClick={() => Like(params.postId)}/>
           </div>
           );
     }
@@ -116,8 +143,8 @@ export default function UserPosts() {
         <Container maxWidth="sm">
         <ImageList sx={{ width: 350, height: 450 }} cols={3} rowHeight={164}>
           {content.map((file) => 
-            <ImageListItem key={file.fileDownloadName}>
-              <img src={`data:${file.contentType}};base64,${file.fileContents}`} width="50%" height="50%" alt={file.fileDownloadName}/>
+            <ImageListItem key={file}>
+              <img src={file} width="50%" height="50%" alt={file}/>
             </ImageListItem>
           )}
         </ImageList>
@@ -148,7 +175,6 @@ export default function UserPosts() {
                   </li>
                 ))}
             </ol>
-            <div ref={observe}></div>
             </Container>
             );
     }
@@ -201,10 +227,6 @@ export default function UserPosts() {
         }
         setError(false);
     }
-
-    if(content)
-    {
-      console.log("something");
     return (
       <div>
         <Box sx={{ '& button': { m: 2 } }}>
@@ -277,32 +299,4 @@ export default function UserPosts() {
             </Container>   
       </div>
     );
-    }
-    else
-    {
-        return(
-            <Container maxWidth="sm">
-              <Card sx={{ maxWidth: 400, m: 2 }}>
-                <CardHeader
-                  title={
-                      <Skeleton
-                        animation="wave"
-                        height={10}
-                        width="80%"
-                        style={{ marginBottom: 6 }}
-                      />
-                  }
-                />
-                <Skeleton sx={{ height: 190 }} animation="wave" variant="rectangular" />
-
-                <CardContent>
-                    <React.Fragment>
-                      <Skeleton animation="wave" height={10} style={{ marginBottom: 6 }} />
-                      <Skeleton animation="wave" height={10} width="80%" />
-                    </React.Fragment>
-                </CardContent>
-              </Card>
-            </Container>
-        );
-    }
 }
