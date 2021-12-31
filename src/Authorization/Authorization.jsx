@@ -29,9 +29,9 @@ export default function Authorization(){
     return Promise.reject(error);
     });
 
-    const refreshAccessToken = () => {
+    const refreshAccessToken = async () => {
     
-    axios({
+    await axios({
         method: 'post',
         url: 'http://localhost:5050/api/Authorization/refresh-token',
         headers:{

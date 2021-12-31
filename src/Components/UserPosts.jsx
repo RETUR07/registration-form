@@ -65,7 +65,9 @@ export default function UserPosts() {
             (error) => {
               setError(true);
               console.log(error); 
-               });
+               })
+               .finally(() => {setFetching(false)});
+               
       }}, [fetching]);
 
     const errorMessage = () => {
