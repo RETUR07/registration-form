@@ -13,8 +13,7 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 
 const cache = require('memory-cache');
 const axios = require('axios').default;
-
-
+const signalR = require('@microsoft/signalr');
 
 export default function UserPosts() {
 
@@ -23,6 +22,21 @@ export default function UserPosts() {
     const [error, setError] = useState(false);
     const [currentPage, setPage] = useState(cache.get('lastLoadedPage')?(cache.get('lastLoadedPage')+1):1);
     const [fetching, setFetching] = useState(false);
+    const [jwtToken, setJwtToken] = useState(localStorage.getItem("jwtToken"));
+    useEffect(() => {
+      const hubConnection = new signalR.HubConnectionBuilder()
+      .withUrl("http://localhost:5050/hubs/changeRate", {
+      accessTokenFactory: () => jwtToken,
+      transport: signalR.HttpTransportType.hubConnection,
+    })
+      .build();
+      hubConnection.on('Notify', () => {
+        console.log("notified");
+        GetLikes(content);
+      });
+      hubConnection.start().catch(() => {setJwtToken(localStorage.getItem("jwtToken"))});
+    }, [jwtToken, content])
+
 
     useEffect(() => {
       document.addEventListener('scroll', scrollHandler);
@@ -30,7 +44,7 @@ export default function UserPosts() {
     }, []);
 
     const scrollHandler = (e) => {
-      if(e.target.documentElement.scrollHeight - (e.target.documentElement.scrollTop + window.innerHeight) < 100){
+      if(e.target.documentElement.scrollHeight - (e.target.documentElement.scrollTop + window.innerHeight) < 200){
         setFetching(true);
       }
     }
@@ -120,7 +134,7 @@ export default function UserPosts() {
         })
         .then(
         (response) => {
-            GetLikes(content);
+            // GetLikes(content);
         })
         .catch(
             (error) => {
