@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Container from '@mui/material/Container';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
@@ -10,6 +10,8 @@ import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import Skeleton from '@mui/material/Skeleton';
 import FavoriteIcon from '@mui/icons-material/Favorite';
+import debounce from 'lodash.debounce';
+
 
 const cache = require('memory-cache');
 const axios = require('axios').default;
@@ -23,6 +25,7 @@ export default function UserPosts() {
     const [currentPage, setPage] = useState(cache.get('lastLoadedPage')?(cache.get('lastLoadedPage')+1):1);
     const [fetching, setFetching] = useState(false);
     const [jwtToken, setJwtToken] = useState(localStorage.getItem("jwtToken"));
+
     useEffect(() => {
       const hubConnection = new signalR.HubConnectionBuilder()
       .withUrl("http://localhost:5050/hubs/changeRate", {
@@ -31,7 +34,6 @@ export default function UserPosts() {
     })
       .build();
       hubConnection.on('Notify', () => {
-        console.log("notified");
         GetLikes(content);
       });
       hubConnection.start().catch(() => {setJwtToken(localStorage.getItem("jwtToken"))});
@@ -39,15 +41,20 @@ export default function UserPosts() {
 
 
     useEffect(() => {
-      document.addEventListener('scroll', scrollHandler);
-      return () => { document.removeEventListener('scroll', scrollHandler)}
+      document.addEventListener('scroll', debouncedScrollHandler);
+      return () => { document.removeEventListener('scroll', debouncedScrollHandler)}
     }, []);
 
     const scrollHandler = (e) => {
-      if(e.target.documentElement.scrollHeight - (e.target.documentElement.scrollTop + window.innerHeight) < 200){
+      const position = e.target.documentElement.scrollHeight - (e.target.documentElement.scrollTop + window.innerHeight);
+      if(position < 200){
         setFetching(true);
       }
     }
+    const debouncedScrollHandler = useMemo(
+      () => debounce(scrollHandler, 500)
+    , []);
+
 
     useEffect(() => 
     {
@@ -129,7 +136,7 @@ export default function UserPosts() {
         url: 'http://localhost:5050/api/Rate/post',
         data:{
           "objectId": postId,
-          "likeStatus": 0
+          "likeStatus": 1
         },
         })
         .then(
@@ -145,7 +152,7 @@ export default function UserPosts() {
 
     const ShowLikes = (params) => {
       const likeValue = (likes.find((x) => x.find(y => y.postId === params.postId)));
-      const output = likeValue?likeValue.length:0;
+      const output = likeValue?likeValue.filter((x) => x.likeStatus === "Liked").length:0;
         return (
           <div>
             {output} 
@@ -160,7 +167,7 @@ export default function UserPosts() {
         <ImageList sx={{ width: 350, height: 450 }} cols={3} rowHeight={164}>
           {content.map((file) => 
             <ImageListItem key={file}>
-              <img src={file} width="50%" height="50%" alt={file}/>
+              <img src={file + "?access_token=" + localStorage.getItem("jwtToken")} width="50%" height="50%" alt={file}/>
             </ImageListItem>
           )}
         </ImageList>
@@ -175,7 +182,7 @@ export default function UserPosts() {
                 {content.map((post) => (
                   <li key={post.id}>
                      <Card sx={{ maxWidth: 400, m: 2 }}>
-                        <CardHeader title={ post.header } />
+                        <CardHeader title={ post.header + "ID" + post.id } />
                         { ShowContent(post.content) }
                         <CardContent>
                           {
@@ -227,7 +234,6 @@ export default function UserPosts() {
         for(let idx = 0; idx < files.length; idx++){
           bodyFormData.append('Content', files[idx]);
         }
-
         axios({
           method: 'post',
           url: 'http://localhost:5050/api/Post',
@@ -263,7 +269,6 @@ export default function UserPosts() {
         <form>
           <Card sx={{ maxWidth: 400, m: 2 }}>
             <CardHeader title='Create post'/>
-            
             <CardContent>
               <Box
                 sx={{
@@ -280,10 +285,7 @@ export default function UserPosts() {
                 <Typography variant="body1" component="div">                 
                 <textarea name="Text1" cols="40" rows="5" onChange={handleText}></textarea>              
                 </Typography>
-              </Box>
-              
-
-              
+              </Box> 
             </CardContent>
             <button onClick={handleSubmit} className="btn" type="submit">
               Create
