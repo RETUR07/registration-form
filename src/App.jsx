@@ -5,6 +5,7 @@ import AuthForm from "./Components/AuthForm.jsx";
 import ChangeUserInfo from './Components/ChangeUserInfo.jsx';
 import CreateUserForm from './Components/CreateUserForm.jsx';
 import UserPosts from './Components/UserPosts.jsx';
+import Chats from './Components/Chats';
 import { BrowserRouter as Router, Route, Link, Routes } from 'react-router-dom';
 import PrivateRoute from './Guards/PrivateRoute';
 import PublicRoute from './Guards/PublicRoute';
@@ -32,6 +33,7 @@ function App() {
     <div>
       <Link className='mylink' to='/'>Main</Link>
       <Link className='mylink' to='/ChangeUserInfo'>ChangeUserInfo</Link>
+      <Link className='mylink' to='/Chats'>Chats</Link>
       <Link className='mylink' to='/AuthForm'>AuthForm</Link>
       <Link className='mylink' to='/CreateUserForm'>CreateUserForm</Link>
     </div>
@@ -39,19 +41,22 @@ function App() {
         <Route path='/' element={ 
         <div className='App'>
           <PrivateRoute>
-            <Button variant='contained' onClick={LogOut} class="mybtn" type="submit">
-              log out
-            </Button>
             <UserPosts/>
           </PrivateRoute>
         </div>}/>
         <Route path='/ChangeUserInfo' element={ 
         <div className='App'>
           <PrivateRoute>
-            <button onClick={LogOut} className="btn" type="submit">
+            <Button variant='contained' onClick={LogOut} class="mybtn" type="submit">
               log out
-            </button>
+            </Button>
             <ChangeUserInfo/>
+          </PrivateRoute>
+        </div>}/>
+        <Route path='/Chats' element={ 
+        <div className='App'>
+          <PrivateRoute>
+            <Chats/>
           </PrivateRoute>
         </div>}/>
         <Route path='/AuthForm' element={

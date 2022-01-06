@@ -24,21 +24,29 @@ export default function UserPosts() {
     const [error, setError] = useState(false);
     const [currentPage, setPage] = useState(cache.get('lastLoadedPage')?(cache.get('lastLoadedPage')+1):1);
     const [fetching, setFetching] = useState(false);
-    const [jwtToken, setJwtToken] = useState(localStorage.getItem("jwtToken"));
+    const [signalRstate, setSignalRstate] = useState(true);
 
     useEffect(() => {
-      const hubConnection = new signalR.HubConnectionBuilder()
-      .withUrl("http://localhost:5050/hubs/changeRate", {
-      accessTokenFactory: () => jwtToken,
-      transport: signalR.HttpTransportType.hubConnection,
-    })
-      .build();
-      hubConnection.on('Notify', () => {
-        GetLikes(content);
-      });
-      hubConnection.start().catch(() => {setJwtToken(localStorage.getItem("jwtToken"))});
-    }, [jwtToken, content])
+        const hubConnection = new signalR.HubConnectionBuilder()
+        .withUrl("http://localhost:5050/hubs/changeRate", {
+        accessTokenFactory: () => localStorage.getItem("jwtToken"),
+        transport: signalR.HttpTransportType.hubConnection,
+      })
+        .build();
+        hubConnection.on('Notify', (e) => {
+          GetLikes(content);
+        });
+        hubConnection.start().catch(() => {
+          setSignalRstate(false);
+        });
+        setSignalRstate(true);
+        return () => {hubConnection.stop()}
+      
+    }, [signalRstate])
 
+    useEffect(() => {
+      setFetching(true);
+    }, []);
 
     useEffect(() => {
       document.addEventListener('scroll', debouncedScrollHandler);
@@ -213,7 +221,6 @@ export default function UserPosts() {
 
     const handleFiles = (e) => {
       setFiles(e.target.files);
-      console.log(e.target.files);
     }
 
     const handleText = (e) => {
@@ -230,7 +237,6 @@ export default function UserPosts() {
         bodyFormData.append('Header', title);
         bodyFormData.append('ParentPostId', 1);
         bodyFormData.append('Text', text);
-        console.log(files);
         for(let idx = 0; idx < files.length; idx++){
           bodyFormData.append('Content', files[idx]);
         }
