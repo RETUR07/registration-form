@@ -1,4 +1,4 @@
-import {React, useState, useEffect} from "react";
+import {React, useState, useEffect, createRef} from "react";
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
@@ -7,36 +7,17 @@ import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
 import Divider from '@mui/material/Divider';
+import Grid from '@mui/material/Grid';
+import ShowChat from "./ShowChat";
 
 const cache = require('memory-cache');
 const axios = require('axios').default;
-const signalR = require('@microsoft/signalr');
 
 export default function Chats() {
     const [content, setContent] = useState(cache.get('chats')?cache.get('chats'):[]);
     const [error, setError] = useState(false);
-    const [signalRstate, setSignalRstate] = useState(true);
     const [currentChat, setCurrentChat] = useState(null);
-
-
     useEffect(() => GetChats(), []);
-    useEffect(() => {
-        const hubConnection = new signalR.HubConnectionBuilder()
-        .withUrl("http://localhost:5050/hubs/chats", {
-        accessTokenFactory: () => localStorage.getItem("jwtToken"),
-        transport: signalR.HttpTransportType.hubConnection,
-      })
-        .build();
-        hubConnection.on('Send', (e) => {
-            GetChat(currentChat.id);
-        });
-        hubConnection.start().catch(() => {
-          setSignalRstate(false);
-        });
-        setSignalRstate(true);
-        return () => {hubConnection.stop()}
-      
-    }, [signalRstate]);
 
     const GetChats = () => {
         axios({
@@ -93,87 +74,41 @@ export default function Chats() {
             );
         }
 
-      const ShowChat = (props) => {
-        if (!props.chat)return ("nothing");
-        return (
-            <div>
-                <Box sx={{ height: 320, transform: 'translateZ(0px)', flexGrow: 1 }}>
-                <SpeedDial
-                    ariaLabel="SpeedDial basic example"
-                    sx={{ position: 'absolute', bottom: 16, right: 16 }}
-                    icon={<SpeedDialIcon />}
-                >
-                    {props.chat.users.map((user) => (
-                    <SpeedDialAction
-                        key={user}
-                        icon={user}
-                        tooltipTitle={user}
-                    />
-                    ))}
-                </SpeedDial>
-                </Box>
-                <List component="nav" aria-label="mailbox folders">
-                    {props.chat.messages.map((message) => (
-                        <div>
-                        <ListItem key={message.id}>
-                            <ListItemText primary={message.text} />
-                        </ListItem>
-                        <Divider />
-                        </div>
-                    ))}
-                </List>
-            </div>
-            );
-        }
-
-
-        const [message, setMessage] = useState("");
-        const [files, setFiles] = useState([]);
-
-
-        const SendMessage = () => {
-            const bodyFormData = new FormData();
-            bodyFormData.append('Text', message);
-            bodyFormData.append('ChatId', currentChat.id);
-            for(let idx = 0; idx < files.length; idx++){
-                bodyFormData.append('Content', files[idx]);
-            }
-            axios({
-                method: 'put',
-                url: 'http://localhost:5050/api/Chat/addmessage',
-                headers:{
-                    "Content-Type":'multipart/form-data',
-                },
-                data: bodyFormData,
-                })
-                .catch(
-                    (error) => {
-                      setError(true);
-                      console.log(error); 
-                })
-        }
-
-        const handleMessage = (e) => {
-            setMessage(e.target.value);
-        }
-        const handleFiles = (e) => {
-            setFiles(e.target.files);
-        }     
+      const ShowChatUsers = (props) => {
+          if (!props.chat)return null;
+          return(
+            <Box sx={{ height: 320, transform: 'translateZ(0px)', flexGrow: 1 }}>
+            <SpeedDial
+                ariaLabel="SpeedDial basic example"
+                sx={{ position: 'absolute', bottom: 16, right: 16 }}
+                icon={<SpeedDialIcon />}
+            >
+                {props.chat.users.map((user) => (
+                <SpeedDialAction
+                    key={user}
+                    icon={user}
+                    tooltipTitle={user}
+                />
+                ))}
+            </SpeedDial>
+            </Box>);
+      }
 
     return (
-        <div>    
-            <ShowChats/>
-            <ShowChat chat={currentChat}/>
-            <div>
-                <form>
-                    <textarea name="Text1" cols="40" rows="5" onChange={handleMessage}></textarea>
-                    <input onChange={handleFiles} className="input" type="file" multiple/>
+        <div >    
+            <Grid container spacing={2}>
+                <Grid item xs={3}>
+                    <ShowChats/>
+                </Grid>
 
-                    <button onClick={SendMessage} type="button">
-                        send
-                    </button> 
-                </form>
-            </div>
+                <Grid item xs={8}>
+                    <ShowChat GetChat={GetChat} chat={currentChat}/>
+                </Grid>
+
+                <Grid item xs={1}>
+                    <ShowChatUsers chat={currentChat}/>
+                </Grid>
+            </Grid>
         </div>
       );
 }

@@ -33,7 +33,7 @@ export default function UserPosts() {
         transport: signalR.HttpTransportType.hubConnection,
       })
         .build();
-        hubConnection.on('Notify', (e) => {
+        hubConnection.on('Notify', () => {
           GetLikes(content);
         });
         hubConnection.start().catch(() => {
@@ -111,11 +111,11 @@ export default function UserPosts() {
       );
     };
 
-    const GetLikes = (content) => {
+    const GetLikes = (с) => {
       const rateParams = new URLSearchParams();
 
-      for(let idx = 0; idx < content.length; idx++){
-        rateParams.append("postIDs", content[idx].id);            
+      for(let idx = 0; idx < с.length; idx++){
+        rateParams.append("postIDs", с[idx].id);            
       }
       axios({
         method: 'get',

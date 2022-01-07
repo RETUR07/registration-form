@@ -5,7 +5,7 @@ import AuthForm from "./Components/AuthForm.jsx";
 import ChangeUserInfo from './Components/ChangeUserInfo.jsx';
 import CreateUserForm from './Components/CreateUserForm.jsx';
 import UserPosts from './Components/UserPosts.jsx';
-import Chats from './Components/Chats';
+import Chats from './Components/Chats.jsx';
 import { BrowserRouter as Router, Route, Link, Routes } from 'react-router-dom';
 import PrivateRoute from './Guards/PrivateRoute';
 import PublicRoute from './Guards/PublicRoute';
