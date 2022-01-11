@@ -1,4 +1,4 @@
-import {React, useState, useEffect, createRef} from "react";
+import {React, useState, useEffect} from "react";
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
@@ -9,6 +9,7 @@ import SpeedDialAction from '@mui/material/SpeedDialAction';
 import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
 import ShowChat from "./ShowChat";
+import ConfirmationDialog from "./AddChatDialog"
 
 const cache = require('memory-cache');
 const axios = require('axios').default;
@@ -61,7 +62,11 @@ export default function Chats() {
 
       const ShowChats = () => {
         return (
-            <List component="nav" aria-label="mailbox folders">
+            <List sx={{
+                width: '100%',
+                overflow: 'auto',
+                maxHeight: window.innerHeight * 0.75,
+            }} component="nav" aria-label="mailbox folders">
                 {content.map((chat) => (
                     <div key={chat.id}>
                     <ListItem button onClick={() => {GetChat(chat.id)}}>
@@ -70,6 +75,9 @@ export default function Chats() {
                     <Divider />
                     </div>
                 ))}
+                <ListItem>
+                    <ConfirmationDialog />
+                </ListItem>
             </List>
             );
         }
