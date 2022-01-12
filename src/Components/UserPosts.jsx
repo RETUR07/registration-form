@@ -170,6 +170,7 @@ export default function UserPosts() {
     }
 
     const ShowContent = (content) => {
+      if(!content || content.length === 0)return null;
       return (
         <Container maxWidth="sm">
         <ImageList sx={{ width: 350, height: 450 }} cols={3} rowHeight={164}>

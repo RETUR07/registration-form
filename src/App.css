@@ -1,6 +1,8 @@
 .App {
   text-align: center;
   background-color:rgb(182, 212, 182);
+  padding-top: 1ch;
+  word-wrap: break-word;
   }
   
   .label{

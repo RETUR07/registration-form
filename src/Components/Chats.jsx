@@ -10,6 +10,7 @@ import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
 import ShowChat from "./ShowChat";
 import ConfirmationDialog from "./AddChatDialog"
+import Container from '@mui/material/Container';
 
 const cache = require('memory-cache');
 const axios = require('axios').default;
@@ -18,6 +19,7 @@ export default function Chats() {
     const [content, setContent] = useState(cache.get('chats')?cache.get('chats'):[]);
     const [error, setError] = useState(false);
     const [currentChat, setCurrentChat] = useState(null);
+    
     useEffect(() => GetChats(), []);
 
     const GetChats = () => {
@@ -42,9 +44,13 @@ export default function Chats() {
       };
 
       const GetChat = (chatId) => {
+        const params = new URLSearchParams({
+            PageNumber: 1,
+            PageSize: 10,
+          }).toString();
         axios({
           method: 'get',
-          url: 'http://localhost:5050/api/Chat/' + chatId,
+          url: 'http://localhost:5050/api/Chat/' + chatId + "?" + params,
           })
           .then(
           (response) => {
@@ -103,7 +109,8 @@ export default function Chats() {
       }
 
     return (
-        <div >    
+        <div>
+        <Container maxWidth="sm" >   
             <Grid container spacing={2}>
                 <Grid item xs={3}>
                     <ShowChats/>
@@ -117,6 +124,7 @@ export default function Chats() {
                     <ShowChatUsers chat={currentChat}/>
                 </Grid>
             </Grid>
+        </Container>
         </div>
       );
 }
