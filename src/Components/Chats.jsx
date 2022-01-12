@@ -50,7 +50,7 @@ export default function Chats() {
           }).toString();
         axios({
           method: 'get',
-          url: 'http://localhost:5050/api/Chat/' + chatId + "?" + params,
+          url: 'http://localhost:5050/api/Chat/' + chatId,
           })
           .then(
           (response) => {
@@ -117,7 +117,7 @@ export default function Chats() {
                 </Grid>
 
                 <Grid item xs={8}>
-                    <ShowChat GetChat={GetChat} chat={currentChat}/>
+                    <ShowChat setChat={setCurrentChat} chat={currentChat}/>
                 </Grid>
 
                 <Grid item xs={1}>

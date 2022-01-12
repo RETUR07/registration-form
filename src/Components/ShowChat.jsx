@@ -21,7 +21,7 @@ export default function ShowChat(props) {
     useEffect(() => {
         if (props.chat)
             setMessages(props.chat.messages);
-    }, [props]);
+    },[props.chat]);
 
     useEffect(() => {
         if (props.chat){
@@ -32,7 +32,9 @@ export default function ShowChat(props) {
             })
             .build();
             hubConnection.on('MessageChanged', (e) => {
-                setMessages(messages.concat(e));
+                props.chat.messages = [...props.chat.messages, e]
+                props.setChat(props.chat);
+                setMessages(props.chat.messages);
             });
             hubConnection.on('Notify', (e) => {
                 console.log(e);
