@@ -11,6 +11,7 @@ import PrivateRoute from './Guards/PrivateRoute';
 import PublicRoute from './Guards/PublicRoute';
 import Context from './Contexts/Context';
 import Button from '@mui/material/Button';
+import VideoStreaming from "./Components/VideoStreaming.jsx";
 
 const cache = require('memory-cache');
 
@@ -34,6 +35,7 @@ function App() {
       <Link className='mylink' to='/'>Main</Link>
       <Link className='mylink' to='/ChangeUserInfo'>ChangeUserInfo</Link>
       <Link className='mylink' to='/Chats'>Chats</Link>
+      <Link className='mylink' to='/VideoStreaming'>VideoStreaming</Link>
       <Link className='mylink' to='/AuthForm'>AuthForm</Link>
       <Link className='mylink' to='/CreateUserForm'>CreateUserForm</Link>
     </div>
@@ -57,6 +59,12 @@ function App() {
         <div className='App'>
           <PrivateRoute>
             <Chats/>
+          </PrivateRoute>
+        </div>}/>
+        <Route path='/VideoStreaming' element={ 
+        <div className='App'>
+          <PrivateRoute>
+            <VideoStreaming/>
           </PrivateRoute>
         </div>}/>
         <Route path='/AuthForm' element={
