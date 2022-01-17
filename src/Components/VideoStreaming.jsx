@@ -1,10 +1,9 @@
 import { React, useState, useEffect, useRef } from "react"
+import ConfirmationDialog from "./AddVideoChatDialog";
 
 const signalR = require('@microsoft/signalr');
 
 export default function VideoStreaming(){
-
-    const mimeType = "video/webm;codecs=vp8,opus";
 
     const Send = () => {
         const [signalRhub, setSignalR] = useState(null);
@@ -32,65 +31,79 @@ export default function VideoStreaming(){
     
         const video = useRef(null);
 
+        const getFrame = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = video.current.videoWidth;
+            canvas.height = video.current.videoHeight;
+            canvas.getContext('2d').drawImage(video.current, 0, 0);
+            const data = canvas.toDataURL('image/png');
+            return data;
+        }
+
         useEffect(() => {
             if(signalRhub){
-                const subject = new signalR.Subject();
+                const VideoSubject = new signalR.Subject();
+                // const SoundSubject = new signalR.Subject();
+                const FPS = 10;
 
-                const getFrame = () => {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = video.current.videoWidth;
-                    canvas.height = video.current.videoHeight;
-                    canvas.getContext('2d').drawImage(video.current, 0, 0);
-                    const data = canvas.toDataURL('image/png');
-                    return data;
-                }
-
-                navigator.mediaDevices.getUserMedia({video: {width: 426, height: 240}}).then((stream) => video.current.srcObject = stream);
-                //const constraints = { video: true };
-
-                signalRhub.send("UploadStream", subject).catch(() => {
+                signalRhub.send("UploadStream", VideoSubject).catch(() => {
                     setSignalRState(false);
                 });
 
+                // signalRhub.send("UploadSoundStream", SoundSubject).catch(() => {
+                //     setSignalRState(false);
+                // });
 
-                const FPS = 3;
-                setInterval(() => {
+                let mediastream = null;
+                // let recorder = null;
+
+                navigator.mediaDevices.getUserMedia({video: {width: 426, height: 240}, audio: true}).then((stream) => {
+                    video.current.srcObject = stream;
+                    video.current.volume = 0;
+                    mediastream = stream;
+
+                    // recorder = new MediaRecorder(stream, { mimeType:"audio/webm" });
+
+                    // recorder.ondataavailable = (e) => {
+                    //     const reader = new FileReader();
+                    //     const sliceSize = 500;
+
+                    //     reader.onloadend = () => {
+                    //         for(let idx = 0; reader.result.length > sliceSize * idx; idx++){
+                    //             SoundSubject.next(reader.result.slice(idx * sliceSize, (idx + 1) * sliceSize));
+                    //         }
+                    //         SoundSubject.next("&&&");
+                    //     }
+                
+                    //     reader.readAsDataURL(e.data);
+                    // }
+
+                    // recorder.start(10000);
+
+                    
+                });
+
+                const VideoStop = setInterval(() => {
                     const base64img = getFrame();
-                    const sliceSize = 150;
+                    const sliceSize = 500;
                     
                     for(let idx = 0; base64img.length > sliceSize * idx; idx++)
                     {
-                        subject.next(base64img.slice(idx * sliceSize, (idx + 1) * sliceSize));
+                        VideoSubject.next(base64img.slice(idx * sliceSize, (idx + 1) * sliceSize));
                     }
-                    subject.next("&&&");
+                    VideoSubject.next("&&&");
+
                 }, 1000 / FPS);
 
-                // navigator.mediaDevices
-                // .getUserMedia(constraints)
-                // .then((mediaStream) => {
-                //     const recorder = new MediaRecorder(mediaStream, {
-                //         audioBitsPerSecond : 0,
-                //         videoBitsPerSecond : 100000,
-                //         mimeType: mimeType
-                //       });
 
-                //     recorder.ondataavailable = async (event) => {
-                //         const stream = await event.data.stream();
-                //         const reader = stream.getReader();
-                //         reader.read().then(({ done, value }) => {
-                //             const sliceSize = 3000;
 
-                //             for(let idx = 0; value.length > sliceSize * idx; idx++)
-                //             {
-                //                 subject.next(value.slice(idx * sliceSize, (idx + 1) * sliceSize).toString());
-                //             }
-                            
-                //         });
-                        
-                //     };
-                //     recorder.start(1000);
-                //     return () => recorder.stop();
-                // });
+                return () => {
+                    clearInterval(VideoStop);
+                    // recorder.stop();
+                    mediastream?.getTracks().forEach((track) => {
+                        track.stop();
+                    });
+                };
             }
         }, [signalRhub]);
 
@@ -107,6 +120,10 @@ export default function VideoStreaming(){
     const Recieve = () => {
         const [signalRhub, setSignalR] = useState(null);
         const [signalRState, setSignalRState] = useState(true);
+        const [base64img] = useState({img:""});
+        // const [base64snd] = useState({snd:""});
+        const video = useRef(null); 
+        // const sound = useRef(null); 
 
         useEffect(() => {
             const hubConnection = new signalR.HubConnectionBuilder()
@@ -115,76 +132,54 @@ export default function VideoStreaming(){
             transport: signalR.HttpTransportType.hubConnection,
             })
             .build();
+
+            hubConnection.on('Notify', (e) => {
+                console.log(e);
+            });
+
+            hubConnection.on('VideoPart', (item) => {
+                if(item === "&&&"){
+                    video.current.src = base64img.img;
+                    base64img.img = "";
+                }
+                else{
+                    base64img.img += item;
+                }
+                
+            });
+
+            // hubConnection.on('SoundPart', (item) => {
+            //     if(item === "&&&"){
+            //         console.log(base64snd.snd);
+            //         sound.current.src = base64snd.snd;
+            //         sound.current.play();
+            //         base64snd.snd = "";
+            //     }
+            //     else{
+            //         base64snd.snd += item;
+            //     }
+                
+            // });
+
             hubConnection.start()
             .then(() =>  
-            {  
+            {
                 setSignalR(hubConnection);
                 setSignalRState(true);
             }).catch(() => {
-                
                 setSignalRState(false);
             });
             return () => {hubConnection.stop()}
       
         }, [signalRState]);
 
-        const [mediaSegments, setMediaSegments] = useState({segments:[]});
-        const [mediaSource, setMediSource] = useState(new MediaSource());
-        const [sourceBuffer, setSourceBuffer] = useState(null);
-        const video = useRef(null); 
-
-        useEffect(() => {
-            if(sourceBuffer)
-            {
-                sourceBuffer.addEventListener('updateend', onUpdateEnd);
-                console.log('3');
-            }
-        }, [sourceBuffer]);
-
-        const mediaSourceOpen = () => {
-            setSourceBuffer(mediaSource.addSourceBuffer(mimeType));    
-            console.log('2');
-        }
-          
-        const onUpdateEnd = () => {
-            if (!mediaSegments.segments.length) {
-              return;
-            }
-
-            sourceBuffer.appendBuffer(mediaSegments.segments.shift());
-            console.log('4');
-          }
-
-        const Play = () => {
-            let base64img = "";
-            signalRhub?.stream("DownloadStream").subscribe({
-                next: (item) => {
-                    //const byteArray = new Uint8Array(JSON.parse("[" + item + "]"));
-                    //mediaSegments.segments = mediaSegments.segments.concat(byteArray);
-                    if(item === "&&&"){
-                        video.current.src = base64img;
-                        base64img = "";
-                    }
-                    else{
-                        base64img += item;
-                    }
-                },
-                error: (err) => {
-                    console.log(err);
-                },
-            });
-
-            // mediaSource.addEventListener('sourceopen', () => mediaSourceOpen());
-            // video.current.src = window.URL.createObjectURL(mediaSource);  
-            // console.log('1');
-        }
 
         return (
             <div>
-                <button type="button" onClick={Play}>Play</button>
-                <button type="button" onClick={onUpdateEnd}>Update</button>
+                <ConfirmationDialog signalR={signalRhub}/>
                 recieved
-                <video ref={video}></video>
+                <img ref={video}></img>
+                {/* <audio ref={sound} autoPlay></audio> */}
             </div>
         );
 
