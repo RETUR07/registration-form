@@ -30,14 +30,18 @@ export default function Authorization(){
     });
 
     const refreshAccessToken = async () => {
-    
+        const data = new URLSearchParams();
+        data.append('client_id', "client");
+        data.append('client_secret', "secret");
+        data.append('grant_type', "refresh_token");
+        data.append('refresh_token', localStorage.getItem("refreshToken"));
     await axios({
         method: 'post',
-        url: 'http://localhost:5050/api/Authorization/refresh-token',
+        url: 'https://localhost:9001/connect/token',
         headers:{
-            "Content-Type": "application/json",
+            "Content-Type": "application/x-www-form-urlencoded",
         },
-        data: `${localStorage.getItem("refreshToken")}`,
+        data: data,
     })
     .catch(
         (error) => {
@@ -49,8 +53,8 @@ export default function Authorization(){
         (response) => {
         if(response)
         {
-            localStorage.setItem("jwtToken", response.data.jwtToken);
-            localStorage.setItem("refreshToken", response.data.refreshToken);
+            localStorage.setItem("jwtToken", response.data.access_token);
+            localStorage.setItem("refreshToken", response.data.refresh_token);
             setAuthorized(true);
         }
     })

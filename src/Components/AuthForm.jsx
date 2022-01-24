@@ -28,13 +28,20 @@ export default function AuthForm() {
       setError(true);
     } 
     else {
+    const data = new URLSearchParams();
+    data.append('client_id', "client");
+    data.append('scope', "offline_access SocialNetwork");
+    data.append('username', name);
+    data.append('password', password);
+    data.append('client_secret', "secret");
+    data.append('grant_type', "password");
     axios({
       method: 'post',
-      url: 'http://localhost:5050/api/Authorization/authenticate',
-      data:{   
-        "username": name,
-        "password": password 
-      }
+      url: 'https://localhost:9001/connect/token',
+      headers:{
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      data:data,
     })
     .catch(
       function(error) {
@@ -46,8 +53,8 @@ export default function AuthForm() {
        (response) => {
         if(response)
         {
-          localStorage.setItem("jwtToken", response.data.jwtToken);
-          localStorage.setItem("refreshToken", response.data.refreshToken);
+          localStorage.setItem("jwtToken", response.data.access_token);
+          localStorage.setItem("refreshToken", response.data.refresh_token);
           setAuthorized(true);     
         }
     })

@@ -18,7 +18,7 @@ const cache = require('memory-cache');
 
 function App() {
 
-  const [isAuthorized, setAuthorized] = useState(true);
+  const [isAuthorized, setAuthorized] = useState(false);
 
   const LogOut = () => {
     cache.clear();

@@ -18,7 +18,7 @@ const axios = require('axios').default;
 
 function ConfirmationDialogRaw(props) {
   const { onClose, value: valueProp, open, ...other } = props;
-  const [checked, setChecked] = useState([0]);
+  const [checked, setChecked] = useState([]);
 
   const handleCancel = () => {
     onClose();
