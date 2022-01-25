@@ -8,6 +8,7 @@ export default function CreateUserForm() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(false);
@@ -19,6 +20,10 @@ export default function CreateUserForm() {
   const handleLastName = (e) => {
     setLastName(e.target.value);
   };
+  
+  const handleEmail = (e) => {
+    setEmail(e.target.value);
+  };
 
   const handleUsername = (e) => {
     setUsername(e.target.value);
@@ -27,15 +32,15 @@ export default function CreateUserForm() {
   const handleDateOfBirth = (e) => {
     setDateOfBirth(e.target.value);
   };
-  // Handling the password change
+
   const handlePassword = (e) => {
     setPassword(e.target.value);
   };
   
-  // Handling the form submission
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (username === '' || password === '' || lastName === '' || firstName === '' || dateOfBirth === '') {
+    if (username === '' || password === '' || lastName === '' || firstName === '' || dateOfBirth === '' || email === null) {
       setError(true);
     } 
     else {
@@ -46,6 +51,7 @@ export default function CreateUserForm() {
         "firstName": firstName,
         "lastName": lastName,
         "username": username,
+        "email": email,
         "dateOfBirth": dateOfBirth,
         "password": password
       }
@@ -63,7 +69,6 @@ export default function CreateUserForm() {
     }
   };
   
-  // Showing error message if error is true
   const errorMessage = () => {
     return (
       <div
@@ -101,6 +106,10 @@ export default function CreateUserForm() {
           <label className="label">Username</label>
           <input onChange={handleUsername} className="input" 
             value={username} type="text" />
+
+          <label className="label">Email</label>
+          <input onChange={handleEmail} className="input" 
+            value={email} type="email" />
     
           <label className="label">Date of birth</label>
           <input onChange={handleDateOfBirth} className="input" 
