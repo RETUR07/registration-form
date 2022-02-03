@@ -26,7 +26,7 @@ export default function SendMessageForm(props){
         }
         axios({
             method: 'put',
-            url: 'http://localhost:5050/api/Chat/addMessage/',
+            url: 'http://localhost:5000/api/Chat/addMessage/',
             headers:{
                 "Content-Type":'multipart/form-data',
             },
@@ -35,6 +35,7 @@ export default function SendMessageForm(props){
             .then((response) => {
                 props.signalRhub.invoke("MessageChanged", response.data.id).catch((e) => console.log(e));
                 setMessage("");
+                setFiles([]);
             })
             .catch(
             (error) => {

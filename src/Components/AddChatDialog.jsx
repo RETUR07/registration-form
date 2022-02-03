@@ -27,7 +27,7 @@ function ConfirmationDialogRaw(props) {
   const handleOk = () => {
     axios({
       method: 'post',
-      url: 'http://localhost:5050/api/Chat',
+      url: 'http://localhost:5000/api/Chat',
       data:{
         "users": checked,
       }

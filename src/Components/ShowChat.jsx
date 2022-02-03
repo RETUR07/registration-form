@@ -26,7 +26,7 @@ export default function ShowChat(props) {
     useEffect(() => {
         if (props.chat){
             const hubConnection = new signalR.HubConnectionBuilder()
-            .withUrl("http://localhost:5050/hubs/chats", {
+            .withUrl("http://localhost:5000/hubs/chats", {
             accessTokenFactory: () => localStorage.getItem("jwtToken"),
             transport: signalR.HttpTransportType.hubConnection,
             })

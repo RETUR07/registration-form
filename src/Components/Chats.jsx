@@ -25,7 +25,7 @@ export default function Chats() {
     const GetChats = () => {
         axios({
           method: 'get',
-          url: 'http://localhost:5050/api/Chat/chats',
+          url: 'http://localhost:5000/api/Chat/chats',
           })
           .then(
           (response) => {
@@ -50,7 +50,7 @@ export default function Chats() {
           }).toString();
         axios({
           method: 'get',
-          url: 'http://localhost:5050/api/Chat/' + chatId,
+          url: 'http://localhost:5000/api/Chat/' + chatId,
           })
           .then(
           (response) => {
